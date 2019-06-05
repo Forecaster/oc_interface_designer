@@ -1,6 +1,6 @@
 # oc_interface_designer
 
-Hi! This is a prorotype currently, so beware of bugs! Report issues/suggestions here. Join #oc on esper.net or [https://discord.gg/0hVukoQ2KYifZFCA](OpenComputers discord server) and poke Forecaster to chat with me!
+Hi! This is a prorotype currently, so beware of bugs! Report issues/suggestions here. Join #oc on esper.net or [OpenComputers discord server](https://discord.gg/0hVukoQ2KYifZFCA) and poke Forecaster to chat with me!
 
 This application is for assisting with creating graphical interfaces for OpenComputers programs, something that I've always found slightly intimidating because it requires dealing with coordinates and stuff. Which means lots of numbers to keep track of.
 
