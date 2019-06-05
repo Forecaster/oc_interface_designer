@@ -1,0 +1,112 @@
+@font-face
+{
+  font-family : 'unifont';
+  src         : url('unifont.ttf') format('truetype');
+}
+
+body
+{
+  font-family      : 'unifont', monospace;
+  background-color : #474747;
+  color            : white;
+}
+
+a,
+a:visited
+{
+  color : lightskyblue;
+}
+
+a:hover
+{
+  color : deepskyblue;
+}
+
+.main-container
+{
+  float       : left;
+  margin-left : 5px;
+}
+
+.container
+{
+  margin-bottom : 10px;
+}
+
+.monitor
+{
+  position : relative;
+}
+
+.row
+{
+  position      : relative;
+  margin-bottom : -3px;
+}
+
+.pixel
+{
+  position         : relative;
+  display          : inline-block;
+  background-color : black;
+  width            : .5em;
+  height           : 1em;
+}
+
+.coordinate
+{
+  position : relative;
+  display  : inline-block;
+  width    : .5em;
+  height   : 1em;
+  color    : white;
+}
+
+.pixel:hover
+{
+  background-color : white !important;
+}
+
+.pixel:focus
+{
+  background-color : yellow !important;
+}
+
+.shape
+{
+  position : absolute;
+}
+
+.shape:hover
+{
+  background-color : white !important;
+}
+
+.color-row
+{
+  height : 15px;
+}
+
+.color-cube
+{
+  display : inline-block;
+  width   : 15px;
+  height  : 15px;
+  cursor  : pointer;
+}
+
+.button
+{
+  cursor : pointer;
+}
+
+.button:hover
+{
+  color : black;
+}
+
+.msg_box
+{
+  font-weight : bold;
+  font-size   : 14pt;
+}
