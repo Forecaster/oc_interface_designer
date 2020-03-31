@@ -200,8 +200,17 @@ $ascii_characters = array(
   </div>
 </div>
 <div class="main-container" style="width: 700px;">
+	<p style="color: red; font-weight: bold">
+		Currently being upgraded! Changing resolution or screen size will cause it to wonk out and place the image in the wrong place! Other than that it should work as expected.
+	</p>
   <p>
-    Hi! This is a prototype currently, so beware of bugs! Go to my <a href="http://towerofawesome.org/forum/forumdisplay.php?fid=58">forum</a>, join #oc on <a href="http://esper.net">esper.net</a> or <a href="https://discord.gg/0hVukoQ2KYifZFCA">OpenComputers discord server</a> and poke Forecaster to get help, report bugs or provide suggestions!
+    Hi! This is mostly a prototype still. Beware of bugs and lack of features.
+	</p>
+	<p>
+		Please report any issues or request features on the <a href="https://github.com/Forecaster/oc_interface_designer">GitHub repository</a>.
+	</p>
+	<p>
+		You may also visit my <a href="http://towerofawesome.org/forum/forumdisplay.php?fid=58">forum</a>, join my <a href="https://discord.gg/mx849JN">Discord server</a>, join #oc on <a href="http://esper.net">esper.net</a> via IRC or <a href="https://discord.gg/0hVukoQ2KYifZFCA">OpenComputers discord server</a> and poke Forecaster to get help, report bugs or provide suggestions!
   </p>
   <p>
     This application is for assisting with creating graphical interfaces for OpenComputers programs, something that I've always found slightly intimidating because it requires dealing with coordinates and stuff. Which means lots of numbers to keep track of.
