@@ -17,7 +17,7 @@ function setResolution(w, h) {
 	console.log("Setting resolution to " + width + "x" + height);
 
 	let monitor = document.getElementById("monitor");
-	monitor.innerHTML = "";
+	monitor.innerHTML = "<div id=\"shape_container\"></div>";
 
 	// var coordinate_row = document.createElement("div");
 	// coordinate_row.className = "row";
@@ -145,7 +145,7 @@ function createShape(x, y, w, h) {
 	y--;
 	w++;
 	h++;
-	let monitor = document.getElementById("monitor");
+	let container = document.getElementById("shape_container");
 	let div = document.createElement("div");
 	let id = shapes.length;
 	div.id = "shape_" + id;
@@ -162,31 +162,47 @@ function createShape(x, y, w, h) {
 	div.setAttribute("data-id", id.toString());
 	div.onclick = manage_shape;
 
-	monitor.appendChild(div);
+	container.prepend(div);
 	shapes.push(div);
+	update_all_shape_code();
 	return true;
 }
 
-function manage_shape(event) {
-	selected_shape_id = event.target.getAttribute("data-id");
-	let shape = shapes[selected_shape_id];
+function get_shape_data(shape_id) {
+	let shape = shapes[shape_id];
 	let x = parseInt(shape.getAttribute("data-x")) + 1;
 	let y = parseInt(shape.getAttribute("data-y")) + 1;
 	let w = parseInt(shape.getAttribute("data-width"));
 	let h = parseInt(shape.getAttribute("data-height"));
 	let fill_code = "gpu.fill(" + x + "," + y + "," + w + "," + h + ",\" \")";
 	let pull_code = "if x >= " + x + " and x <= " + (x + (w - 1)) + " and y >= " + y + " and y <= " + (y + (h - 1)) + " then\n  --put your onclick code here\nend";
-	document.getElementById("fill_code").value = fill_code;
-	document.getElementById("pull_code").value = pull_code;
+	return { x: x, y: y, w: w, h: h, code: { fill: fill_code, touch: pull_code }};
+}
+
+function manage_shape(event) {
+	selected_shape_id = event.target.getAttribute("data-id");
+	let shape = get_shape_data(selected_shape_id);
+	document.getElementById("fill_code").value = shape.code.fill;
+	document.getElementById("pull_code").value = shape.code.touch;
 	document.getElementById("shape_controls").style.display = null;
 }
 
 function delete_shape(id) {
-	let monitor = document.getElementById("monitor");
+	let shape_container = document.getElementById("shape_container");
 	let shape = shapes[id];
 	shapes[id] = null;
-	monitor.removeChild(shape);
+	shape_container.removeChild(shape);
 	document.getElementById("shape_controls").style.display = "none";
+	update_all_shape_code();
+}
+
+function update_all_shape_code() {
+	let shape_code = [];
+	for (let i = 0; i < shapes.length; i++) {
+		let shape = get_shape_data(i);
+		shape_code.push(shape.code.fill);
+	}
+	document.getElementById("all_shapes").value = shape_code.join("\n");
 }
 
 function generate_color_picker() {
@@ -305,16 +321,20 @@ function setScreenSizeControl() {
 }
 
 function updateMonitorScale() {
-	let screenWidth = document.getElementById("monitor_container").clientWidth;
-	let screenHeight = document.getElementById("monitor_container").clientHeight;
+	let monitorContainer = document.getElementById("monitor_container");
+	let screenWidth = monitorContainer.clientWidth;
+	let screenHeight = monitorContainer.clientHeight;
 
 	let monitorWidth = width * 8;
 	let monitorHeight = height * 16;
 
 	let scale = {width: screenWidth / monitorWidth, height: screenHeight / monitorHeight};
 
+	let offsetX = (screenWidth - monitorWidth) / 2;
+	let offsetY = (screenHeight - monitorHeight) / 2;
+
 	let monitor = document.getElementById("monitor");
-	monitor.style.transform = "scale(" + Math.min(scale.width, scale.height) + ")";
+	monitor.style.transform = "translate(" + offsetX + "px, " + offsetY + "px) scale(" + Math.min(scale.width, scale.height) + ")";
 	monitor.style.width = monitorWidth + "px";
 	return scale;
 }

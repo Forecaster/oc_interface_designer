@@ -39,8 +39,8 @@ a:hover {
 
 .monitor {
 	position       : relative;
-	top            : 9px;
-	left           : 9px;
+	/*top            : 9px;*/
+	/*left           : 9px;*/
 	/*width          : 1300px;*/
 	pointer-events : none;
 }
@@ -78,6 +78,8 @@ a:hover {
 
 .shape {
 	position : absolute;
+	z-index: 1000;
+	pointer-events: all;
 }
 
 .shape:hover {
@@ -191,4 +193,12 @@ a:hover {
 
 	width            : 75px;
 	height           : 75px;
+}
+
+.shape_container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1000;
+	pointer-events: all;
 }
