@@ -138,7 +138,13 @@ $ascii_characters = array(
   <meta charset="UTF-8">
   <title>OpenComputers Interface Designer</title>
   <link rel="stylesheet" href="main.css"/>
+  <script src="oc.js"></script>
+  <script src="gui.js"></script>
   <script src="main.js"></script>
+  <script src="util.js"></script>
+  <script src="code.js"></script>
+  <script src="screen.js"></script>
+  <script src="color_picker.js"></script>
 </head>
 <body>
 <h1>OpenComputers Interface Designer</h1>
@@ -154,11 +160,33 @@ $ascii_characters = array(
 		<div class="screen_part screen_bottom_right"></div>
 		<div id="monitor_container" class="monitor_container">
 			<div id="monitor" class="monitor">
+				<div id="pixel_container"></div>
 				<div id="shape_container" class="shape_container"></div>
+				<div id="selector_shape_container" class="shape_container"></div>
+				<div id="pixel_select_container"></div>
 			</div>
 		</div>
 	</div>
+	<div>Mode: <span id="current_mode" style="color: red;">EDIT</span></div>
   <div class="container msg_box" id="messages"></div>
+	<p style="width: 400px;">Draw shapes on the screen above to add them to the reference list below. Click a shape to toggle visibility. Right-click for additional options.</p>
+	<div id="shape_list_container">No shapes drawn yet.	</div>
+</div>
+<div class="main-container" style="width: 600px;">
+	<p>Available components/libraries:</p>
+	<ul>
+		<li><a href="https://ocdoc.cil.li/component:gpu?s[]=gpu">GPU</a> - Call as if having assigned the gpu component to the variable `gpu`. For example: <code>gpu.fill(x, y, w, h, char)</code></li>
+		<li><a href="fgui">FGUI</a> - Call as if having assigned the library to the variable `fgui`. For example: <code>fgui.writeTextCentered(text, line, color, background_color)</code></li>
+	</ul>
+	<label for="code_area" style="font-weight: bold;">Main area:</label>
+	<p>This code is run once when you hit run.</p>
+	<textarea name="code_area" id="code_area" style="width: 100%; height: 400px; resize: vertical; margin-bottom: 20px;" placeholder="GPU code area"></textarea>
+	<label for="code_area_touch" style="font-weight: bold;">OnTouch area</label>
+	<p>After running the main block, clicking on the screen will call the code in this field. You can use the variables `x` and `y` here which are equivalent to the touched pixel.</p>
+	<textarea name="code_area_touch" id="code_area_touch" style="width: 100%; height: 200px; resize: vertical;" placeholder="OnTouch code area"></textarea>
+	<button id="code_start" onclick="run()">Run</button>
+	<button id="code_stop" onclick="stop()" disabled="disabled">Stop</button>
+	<div id="code_output" style="margin-top: 20px;"></div>
 </div>
 <div class="main-container" style="width: 600px;">
   <div class="container">Controls:</div>
@@ -168,82 +196,69 @@ $ascii_characters = array(
 		<input type="number" id="block_height" placeholder="Height" min="1" max="6" />
 		<button onclick="setScreenSizeControl()">Set Screen Size (Blocks)</button>
 	</div>
-  <div class="container">
+  <div class="container" style="display: none;">
 		<div><span>Width</span><span style="margin-left: 140px;">Height</span></div>
     <input type="number" id="res_width" placeholder="Width" />
     <input type="number" id="res_height" placeholder="Height" />
     <button onclick="SetResolutionControl()">Set Resolution</button>
   </div>
-  <div class="container">
+  <div class="container" style="display: none;">
     <div class="container">Resolution Presets (Doesn't change screen size):</div>
     <div class="container" id="resolution_presets"></div>
   </div>
+	<div class="container">
+		<p>Common resolutions:</p>
+		<ul>
+			<li>T1 Screen: 50 x 16</li>
+			<li>T2 Screen: 80 x 25</li>
+			<li>T3 Screen: 160 x 50</li>
+			<li>Tablet: 80 x 25</li>
+		</ul>
+	</div>
   <div class="container">
     <table>
       <TR><TD><label for="color_value">Web Hex:</label></TD><TD><input type="text" placeholder="Web Hex Value" id="color_value"/></TD></TR>
       <TR><TD><label for="color_value_computronics">Lua Hex:</label></TD><TD><input type="text" placeholder="Lua Hex Value" id="color_value_computronics"/></TD></TR>
     </table>
-    <div>
-      <label><input type="radio" name="background_foreground_switch" onclick="setBackgroundTarget();" checked/> Background</label>
-      <label><input type="radio" name="background_foreground_switch" onclick="setForegroundTarget();"/> Foreground (Text)</label>
-    </div>
-  </div>
-  <div class="container">Click a created shape to show controls</div>
-  <div class="container" id="shape_controls" style="display: none;">
-    <div>Shape Controls</div>
-    <div>
-      <button onclick="delete_shape(selected_shape_id)">Delete Shape</button>
-    </div>
-    <div>This code draws the selected shape:</div>
-    <div>
-			<textarea title="Fill Code" id="fill_code" readonly="readonly" style="width: 400px; height: 1.2em; resize: none;"></textarea>
-		</div>
-    <div>This statement tests for clicks within the selected shape:</div>
-    <div>
-			<textarea title="Event conditions" id="pull_code" readonly="readonly" style="width: 400px; height: 4em; resize: vertical;"></textarea>
-		</div>
   </div>
 	<div class="container">
-		<div>Fill calls for all shapes:</div>
-		<textarea title="Draw all shapes" id="all_shapes" readonly="readonly" style="width: 400px; height: 6em; resize: vertical;"></textarea>
+		<div>Insert method call using currently selected color:</div>
+		<div onclick="generateAndInsertMethodCall('gpu.setBackground', { color: document.getElementById('color_value_computronics').value })" style="cursor: pointer;">setBackground</div>
+		<div onclick="generateAndInsertMethodCall('gpu.setForeground', { color: document.getElementById('color_value_computronics').value })" style="cursor: pointer;">setForeground</div>
 	</div>
-  <div id="current_colors">Current Colors</div>
+  <div id="current_color">Current Color</div>
   <div class="container" style="margin-top: 10px;" id="color_picker">
   </div>
-</div>
-<div class="main-container" style="width: 700px;">
-	<p style="color: red; font-weight: bold">
-		Currently being upgraded! Changing resolution or screen size will cause it to wonk out and place the image in the wrong place! Other than that it should work as expected.
-	</p>
-	<p style="color: red; font-weight: bold">
-		It also seems selecting the shapes you create is not possible at this time.
-	</p>
-  <p>
-    Hi! This is mostly a prototype still. Beware of bugs and lack of features.
-	</p>
-	<p>
-		Please report any issues or request features on the <a href="https://github.com/Forecaster/oc_interface_designer">GitHub repository</a>.
-	</p>
-	<p>
-		You may also visit my <a href="http://towerofawesome.org/forum/forumdisplay.php?fid=58">forum</a>, join my <a href="https://discord.gg/mx849JN">Discord server</a>, join #oc on <a href="http://esper.net">esper.net</a> via IRC or <a href="https://discord.gg/0hVukoQ2KYifZFCA">OpenComputers discord server</a> and poke Forecaster to get help, report bugs or provide suggestions!
-  </p>
-  <p>
-    This application is for assisting with creating graphical interfaces for OpenComputers programs, something that I've always found slightly intimidating because it requires dealing with coordinates and stuff. Which means lots of numbers to keep track of.
-  </p>
-  <p>
-    But with this you can graphically draw your buttons and boxes and get the code required to draw them with your program and to test for click events for them!
-  </p>
-  <p>
-    Usage:<br/>
-    1. Select the resolution preset you need, or set a custom one<br/>
-    2. Select two points on the screen to create a shape<br/>
-    3. Click the created shape to show fill code and click event condition for this shape<br/>
-    4. Create as many shapes as you need
-  </p>
+	<div class="container">
+		<p>Hi! This is mostly a prototype still. Beware of bugs and lack of features.</p>
+		<p>Please report any issues or request features on the <a href="https://github.com/Forecaster/oc_interface_designer">GitHub repository</a>.</p>
+		<p>You may also visit my <a href="http://towerofawesome.org/forum/forumdisplay.php?fid=58">forum</a>, join my <a href="https://discord.gg/mx849JN">Discord server</a>, join #oc on <a href="http://esper.net">esper.net</a> via IRC or <a href="https://discord.gg/0hVukoQ2KYifZFCA">OpenComputers discord server</a> and poke Forecaster to get help, report bugs or provide suggestions!</p>
+		<p>This application is for assisting with creating graphical interfaces for OpenComputers programs, something that I've always found slightly intimidating because it requires dealing with coordinates and stuff. Which means lots of numbers to keep track of.</p>
+		<p>Notable features:</p>
+		<ul>
+			<li>Test gpu code quickly and easily</li>
+			<li>Test buttons</li>
+			<li>Pick colors for use in-game or for testing</li>
+			<li>Draw shapes on the screen to quickly acquire positions and sizes</li>
+			<li>More stuff probably</li>
+		</ul>
+	</div>
 </div>
 </body>
 
 <script>
+	let pixel_select_container;
+	let shape_container;
+	let selector_shape_container;
+	let pixel_container;
+	let code_area = document.getElementById("code_area");
+	let code_area_touch = document.getElementById("code_area_touch");
+	let code_output = document.getElementById("code_output");
+	let code_start = document.getElementById("code_start");
+	let code_stop = document.getElementById("code_stop");
+	let current_mode = document.getElementById("current_mode");
+	let shape_list_container = document.getElementById("shape_list_container");
+
 	const pixelWidth = 8;
 	const pixelHeight = 16;
 
@@ -259,19 +274,8 @@ $ascii_characters = array(
 	const maxScreenWidth = 8;
 	const maxScreenHeight = 6;
 
-	let target = "background";
-	let background = "red";
-	let foreground = "white";
-
-	let shapes = [];
-	let shape_data = [];
-
-	let selected_shape_id = null;
-
-	let selectAposX = null;
-	let selectAposY = null;
-	let selectBposX = null;
-	let selectBposY = null;
+	let background = "#000000";
+	let foreground = "#F0F0F0";
 
 	const colors = {
 		rows: ["00", "33", "66", "99", "CC", "FF"],
@@ -282,18 +286,14 @@ $ascii_characters = array(
 
 	const max_resolution_area = 8000;
 
-	const resolution_presets = {
-		T1: {x: 50, y: 16},
-  	T2: {x: 80, y: 25},
-  	T3: {x: 160, y: 50},
-  	Tablet: {x: 80, y: 25},
-	};
-
 	setScreenSize(screenWidth, screenHeight);
-  setResolution(resolution_presets.T1.x, resolution_presets.T1.y);
-  generate_preset_buttons();
+  setResolution(50, 16);
   generate_color_picker();
   update_current_colors();
+
+  document.onclick = function(event) {
+  	destroyContextMenu();
+	}
 </script>
 
 </html>

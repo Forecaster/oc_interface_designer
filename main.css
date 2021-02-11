@@ -21,6 +21,7 @@ a:hover {
 .main-container {
 	float       : left;
 	margin-left : 5px;
+	padding     : 10px;
 }
 
 .container {
@@ -45,6 +46,13 @@ a:hover {
 	pointer-events : none;
 }
 
+.pixel_container {
+	position : absolute;
+}
+
+.pixel_select_container {
+}
+
 .row {
 	position       : relative;
 	margin-bottom  : -3px;
@@ -52,12 +60,28 @@ a:hover {
 }
 
 .pixel {
-	position         : relative;
-	display          : inline-block;
+	position : relative;
+	display  : inline-block;
+	width    : .5em;
+	height   : 1em;
+}
+
+.display_pixel {
 	background-color : black;
-	width            : .5em;
-	height           : 1em;
+}
+
+.select_pixel {
+	background-color : transparent;
 	pointer-events   : all;
+}
+
+.select_pixel:hover {
+	background-color : rgba(255, 255, 255, 0.5);
+	cursor           : none;
+}
+
+.pixel_content {
+	position : absolute;
 }
 
 .coordinate {
@@ -68,22 +92,10 @@ a:hover {
 	color    : white;
 }
 
-.pixel:hover {
-	background-color : white !important;
-}
-
-.pixel:focus {
-	background-color : yellow !important;
-}
-
 .shape {
-	position : absolute;
-	z-index: 1000;
-	pointer-events: all;
-}
-
-.shape:hover {
-	background-color : white !important;
+	position       : absolute;
+	z-index        : 1000;
+	pointer-events : none;
 }
 
 .color-row {
@@ -196,9 +208,39 @@ a:hover {
 }
 
 .shape_container {
-	position: absolute;
+	position       : absolute;
+	top            : 0;
+	left           : 0;
+	z-index        : 1000;
+	pointer-events : all;
+}
+
+.del_button {
+	color: red;
+	font-weight: bold;
+	margin-left: 4px;
+}
+
+.context_menu {
+	position: fixed;
 	top: 0;
 	left: 0;
-	z-index: 1000;
-	pointer-events: all;
+
+	width: 160px;
+
+	background-color: black;
+	color: white;
+}
+
+.context_item {
+	cursor: pointer;
+}
+
+.context_item:nth-child(2n) {
+	background-color: #0d0d0d;
+}
+
+.context_item:hover {
+	background-color: white;
+	color: black;
 }
