@@ -9,8 +9,8 @@ function rgbToHex(r, g, b) {
 }
 //</editor-fold>
 
-function convertColorValueToHex(color) {
-	return color.toString().replace("0x", "#");
+function convertColorValueToHex(x) {
+	return "#" + componentToHex(x).toUpperCase();
 }
 
 function convertColorValueToDec(color) {

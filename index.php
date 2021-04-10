@@ -138,39 +138,64 @@ $ascii_characters = array(
   <meta charset="UTF-8">
   <title>OpenComputers Interface Designer</title>
   <link rel="stylesheet" href="main.css"/>
-  <script src="oc.js"></script>
-  <script src="gui.js"></script>
-  <script src="main.js"></script>
-  <script src="util.js"></script>
-  <script src="code.js"></script>
-  <script src="screen.js"></script>
-  <script src="color_picker.js"></script>
+  <script src="oc.js" type="text/javascript"></script>
+  <script src="gui.js" type="text/javascript"></script>
+  <script src="main.js" type="text/javascript"></script>
+  <script src="util.js" type="text/javascript"></script>
+  <script src="code.js" type="text/javascript"></script>
+  <script src="screen.js" type="text/javascript"></script>
+	<script src="fengari-web.js" type="text/javascript"></script>
+  <script src="color_picker.js" type="text/javascript"></script>
 </head>
 <body>
-<h1>OpenComputers Interface Designer</h1>
+<h1>OpenComputers Interface Designer <span class="state"></span></h1>
 <div class="main-container">
-	<div id="screen" class="screen">
-		<div class="screen_part screen_top"></div>
-		<div class="screen_part screen_bottom"></div>
-		<div class="screen_part screen_left"></div>
-		<div class="screen_part screen_right"></div>
-		<div class="screen_part screen_top_left"></div>
-		<div class="screen_part screen_top_right"></div>
-		<div class="screen_part screen_bottom_left"></div>
-		<div class="screen_part screen_bottom_right"></div>
-		<div id="monitor_container" class="monitor_container">
-			<div id="monitor" class="monitor">
+	<div id="monitor" class="monitor">
+		<div class="monitor_part monitor_top"></div>
+		<div class="monitor_part monitor_bottom"></div>
+		<div class="monitor_part monitor_left"></div>
+		<div class="monitor_part monitor_right"></div>
+		<div class="monitor_part monitor_top_left"></div>
+		<div class="monitor_part monitor_top_right"></div>
+		<div class="monitor_part monitor_bottom_left"></div>
+		<div class="monitor_part monitor_bottom_right"></div>
+		<div id="screen_container" class="screen_container">
+			<div id="screen" class="screen">
 				<div id="pixel_container"></div>
 				<div id="shape_container" class="shape_container"></div>
 				<div id="selector_shape_container" class="shape_container"></div>
-				<div id="pixel_select_container"></div>
+				<div id="pixel_select_container" class="pixel_select_container"></div>
 			</div>
 		</div>
+		<canvas id="grid_container" class="grid"></canvas>
 	</div>
 	<div>Mode: <span id="current_mode" style="color: red;">EDIT</span></div>
+	<div class="container">
+		<div class="col-6">
+			<h4><label for="shapes_opacity">Shapes opacity</label></h4>
+			<div><input id="shapes_opacity" type="number" min="0" max="100" value="100" onchange="setShapesOpacity(this.value)" />%</div>
+		</div>
+		<div class="col-6">
+			<h4><label for="grid_opacity">Grid opacity</label></h4>
+			<div><input id="grid_opacity" type="number" min="0" max="100" value="20" onchange="setGridOpacity(this.value)" />%</div>
+		</div>
+	</div>
   <div class="container msg_box" id="messages"></div>
 	<p style="width: 400px;">Draw shapes on the screen above to add them to the reference list below. Click a shape to toggle visibility. Right-click for additional options.</p>
 	<div id="shape_list_container">No shapes drawn yet.	</div>
+</div>
+<div class="main-container" style="width: 600px;">
+	<h3><label for="code_area">Main area:</label></h3>
+	<p>This code is run once when you hit run.</p>
+	<textarea name="code_area" id="code_area" style="width: 100%; height: 200px; resize: vertical; margin-bottom: 20px;" placeholder="GPU code area"></textarea>
+	<h3><label for="code_area_touch">OnTouch area</label></h3>
+	<p>After running the main block, clicking on the screen will call the code in this field. You can use the variables `x` and `y` here which are set to the column and row of the clicked pixel respectively.</p>
+	<p>Think of this as what you would put inside a touch event listener.</p>
+	<textarea name="code_area_touch" id="code_area_touch" style="width: 100%; height: 200px; resize: vertical;" placeholder="OnTouch code area"></textarea>
+	<button id="code_start" onclick="run()">Run</button>
+	<button id="code_stop" onclick="stop()" disabled="disabled">Stop</button>
+	<h3>Print output:</h3>
+	<div id="code_output" class="console" style="margin-top: 20px;"></div>
 </div>
 <div class="main-container" style="width: 600px;">
 	<p>Available components/libraries:</p>
@@ -178,17 +203,6 @@ $ascii_characters = array(
 		<li><a href="https://ocdoc.cil.li/component:gpu?s[]=gpu">GPU</a> - Call as if having assigned the gpu component to the variable `gpu`. For example: <code>gpu.fill(x, y, w, h, char)</code></li>
 		<li><a href="fgui">FGUI</a> - Call as if having assigned the library to the variable `fgui`. For example: <code>fgui.writeTextCentered(text, line, color, background_color)</code></li>
 	</ul>
-	<label for="code_area" style="font-weight: bold;">Main area:</label>
-	<p>This code is run once when you hit run.</p>
-	<textarea name="code_area" id="code_area" style="width: 100%; height: 400px; resize: vertical; margin-bottom: 20px;" placeholder="GPU code area"></textarea>
-	<label for="code_area_touch" style="font-weight: bold;">OnTouch area</label>
-	<p>After running the main block, clicking on the screen will call the code in this field. You can use the variables `x` and `y` here which are equivalent to the touched pixel.</p>
-	<textarea name="code_area_touch" id="code_area_touch" style="width: 100%; height: 200px; resize: vertical;" placeholder="OnTouch code area"></textarea>
-	<button id="code_start" onclick="run()">Run</button>
-	<button id="code_stop" onclick="stop()" disabled="disabled">Stop</button>
-	<div id="code_output" style="margin-top: 20px;"></div>
-</div>
-<div class="main-container" style="width: 600px;">
   <div class="container">Controls:</div>
 	<div class="container">
 		<div>Width, Height</div>
@@ -223,14 +237,15 @@ $ascii_characters = array(
   </div>
 	<div class="container">
 		<div>Insert method call using currently selected color:</div>
-		<div onclick="generateAndInsertMethodCall('gpu.setBackground', { color: document.getElementById('color_value_computronics').value })" style="cursor: pointer;">setBackground</div>
-		<div onclick="generateAndInsertMethodCall('gpu.setForeground', { color: document.getElementById('color_value_computronics').value })" style="cursor: pointer;">setForeground</div>
+		<div onclick="code_area.value = generateAndInsertMethodCall(code_area.value, 'gpu.setBackground', { color: document.getElementById('color_value_computronics').value }); saveInputField(code_area);" style="cursor: pointer;">setBackground</div>
+		<div onclick="code_area.value = generateAndInsertMethodCall(code_area.value, 'gpu.setForeground', { color: document.getElementById('color_value_computronics').value }); saveInputField(code_area);" style="cursor: pointer;">setForeground</div>
 	</div>
   <div id="current_color">Current Color</div>
   <div class="container" style="margin-top: 10px;" id="color_picker">
   </div>
 	<div class="container">
-		<p>Hi! This is mostly a prototype still. Beware of bugs and lack of features.</p>
+		<p>CURRENT STATE: <span class="state"></span></p>
+		<p>Alpha means many features are missing or broken, as I'm still in the middle of re-writing this application.</p>
 		<p>Please report any issues or request features on the <a href="https://github.com/Forecaster/oc_interface_designer">GitHub repository</a>.</p>
 		<p>You may also visit my <a href="http://towerofawesome.org/forum/forumdisplay.php?fid=58">forum</a>, join my <a href="https://discord.gg/mx849JN">Discord server</a>, join #oc on <a href="http://esper.net">esper.net</a> via IRC or <a href="https://discord.gg/0hVukoQ2KYifZFCA">OpenComputers discord server</a> and poke Forecaster to get help, report bugs or provide suggestions!</p>
 		<p>This application is for assisting with creating graphical interfaces for OpenComputers programs, something that I've always found slightly intimidating because it requires dealing with coordinates and stuff. Which means lots of numbers to keep track of.</p>
@@ -247,17 +262,14 @@ $ascii_characters = array(
 </body>
 
 <script>
-	let pixel_select_container;
-	let shape_container;
-	let selector_shape_container;
-	let pixel_container;
-	let code_area = document.getElementById("code_area");
-	let code_area_touch = document.getElementById("code_area_touch");
-	let code_output = document.getElementById("code_output");
-	let code_start = document.getElementById("code_start");
-	let code_stop = document.getElementById("code_stop");
-	let current_mode = document.getElementById("current_mode");
-	let shape_list_container = document.getElementById("shape_list_container");
+	let monitors = [];
+	const code_area = document.getElementById("code_area");
+	const code_area_touch = document.getElementById("code_area_touch");
+	const code_output = document.getElementById("code_output");
+	const code_start = document.getElementById("code_start");
+	const code_stop = document.getElementById("code_stop");
+	const current_mode = document.getElementById("current_mode");
+	const shape_list_container = document.getElementById("shape_list_container");
 
 	const pixelWidth = 8;
 	const pixelHeight = 16;
@@ -286,13 +298,73 @@ $ascii_characters = array(
 
 	const max_resolution_area = 8000;
 
-	setScreenSize(screenWidth, screenHeight);
-  setResolution(50, 16);
+	// setScreenSize(document.getElementById("monitor"), screenWidth, screenHeight);
+  // setResolution(document.getElementById("monitor"), 50, 16);
+
+	createMonitor(document.getElementById("monitor"), 50, 16);
+
   generate_color_picker();
   update_current_colors();
 
   document.onclick = function(event) {
   	destroyContextMenu();
+	}
+
+	let areas = document.getElementsByTagName("textarea");
+	for (let i in areas) {
+		let elem = areas[i];
+		elem.onkeydown = function(event) {
+			if (event.key === "Tab") {
+				event.preventDefault();
+				let start = elem.selectionStart;
+				let end = elem.selectionEnd;
+				elem.value = elem.value.substr(0, start) + "\t" + elem.value.substr(end);
+				elem.selectionStart = start + 1;
+				elem.selectionEnd = start + 1;
+			}
+		};
+		elem.onkeyup = function(event) {
+			saveInputField(event.target);
+		};
+		loadInputField(elem);
+	}
+
+	loadShapes();
+
+	window.msg = function(text) {
+  	codeOutput(LEVEL.MSG, text);
+	}
+
+	fengari.load('js = require("js") print = function(message) js.global:msg(message) end userDataToTable = function(userdata) if type(userdata) ~= "userdata" then return userdata end if #userdata == 1 then return userdata[0] end tab = {} for i = 0,(#userdata -1) do table.insert(tab, userdata[i]) end return table.unpack(tab) end')();
+
+  for (let lib in oc) {
+  	let functions = [];
+  	for (let func in oc[lib]) {
+  		let f = oc[lib][func].toString();
+  		let re = /function\(([A-Za-z0-9_\-, ]*)\)/;
+  		let matches = re.exec(f);
+  		if (matches) {
+				let args = matches[1].split(",");
+				for (let i in args)
+					args[i] = args[i].trim();
+				functions.push(func + " = function(" + args.join(", ") + ") return userDataToTable(js.global.oc." + lib + ":" + func + "(" + args.join(", ") + ")) end");
+			} else {
+  			console.warn("No match for function in '" + f + "'");
+  			console.debug(oc[lib][func]);
+			}
+		}
+  	let lua = lib + ' = {' + functions.join(", ") + '}';
+  	fengari.load(lua)();
+	}
+
+  let states = { alpha: "red", beta: "lightblue", release: "green" };
+  let state = "beta";
+
+  let state_elements = document.getElementsByClassName("state");
+  for (let i = 0; i < state_elements.length; i++) {
+  	let elem = state_elements[i];
+  	elem.style.color = states[state];
+  	elem.innerText = state.toUpperCase();
 	}
 </script>
 

@@ -14,7 +14,7 @@ function SetResolutionControl() {
 	let width = document.getElementById("res_width").value;
 	let height = document.getElementById("res_height").value;
 	if (width > 0 && height > 0)
-		setResolution(width, height);
+		setResolution(document.getElementById("monitor"), width, height);
 	else
 		set_err("Width and height must be greater than zero.");
 }
@@ -28,7 +28,7 @@ function setScreenSizeControl() {
 		set_err("Width and height must be greater than zero.");
 }
 
-function update_shape_list() {
+function updateShapeList() {
 	shape_list_container.innerHTML = "";
 	let counter = 0;
 	for (let i in shape_list) {
@@ -48,7 +48,8 @@ function update_shape_list() {
 				let index = event.target.getAttribute("data-index");
 				shape_container.removeChild(shape_list[index]);
 				shape_list[index] = null;
-				update_shape_list();
+				updateShapeList();
+				saveShapes();
 			};
 			div.appendChild(del);
 			div.setAttribute("data-index", i);
@@ -89,8 +90,15 @@ function update_shape_list() {
 				let w = shape.getAttribute("data-width");
 				let h = shape.getAttribute("data-height");
 				createContextMenu({
-					fill: { label: "Generate `gpu.fill`", onclick: function(event) { generateAndInsertMethodCall("gpu.fill", { x: x, y: y, w: w, h: h }) }},
-					set: { label: "Generate `gpu.set`", onclick: function(event) { generateAndInsertMethodCall("gpu.set", { x: x, y: y }); }}
+					title_menu: { label: "Generate", class: "title" },
+					title_gpu: { label: "GPU", class: "title" },
+					fill: { label: "`gpu.fill`", onclick: function(event) { code_area.value = generateAndInsertMethodCall(code_area.value,"gpu.fill", { x: x, y: y, w: w, h: h }); saveInputField(code_area); }},
+					set: { label: "`gpu.set`", onclick: function(event) { code_area.value = generateAndInsertMethodCall(code_area.value, "gpu.set", { x: x, y: y }); saveInputField(code_area); }},
+					title_fgui: { label: "fgui", class: "title" },
+					center: { label: "`fgui.writeTextCentered`", onclick: function(event) { code_area.value = generateAndInsertMethodCall(code_area.value, "fgui.writeTextCentered", { x: x, y: y, w: w, h: h }); saveInputField(code_area); }},
+					button: { label: "`fgui.createButton`", onclick: function(event) { code_area.value = generateAndInsertMethodCall(code_area.value,"fgui.createButton", { x: x, y: y, w: w, h: h }); saveInputField(code_area); } },
+					title_tests: { label: "Tests", class: "title" },
+					button_if: { label: "Button if-statement", onclick: function(event) { code_area_touch.value = generateAndInsertCode(code_area_touch.value, "if x > " + (x - 1) + " and x < " + (parseInt(x) + parseInt(w)) + " and y > " + (y - 1) + " and y < " + (parseInt(y) + parseInt(h)) + " then\n  print(\"You clicked me!\")\nend"); saveInputField(code_area_touch); }}
 				}, event.clientX, event.clientY);
 			}
 			shape_list_container.appendChild(div);
@@ -105,7 +113,8 @@ let LEVEL = {
 	ERROR: "error",
 	SUCCESS: "success",
 	MSG: "msg",
-	INFO: "info"
+	INFO: "info",
+	WARN: "warn",
 }
 
 function codeOutputClear() {
@@ -120,6 +129,8 @@ function codeOutput(level, msg) {
 		div.style.color = "green";
 	else if (level === LEVEL.INFO)
 		div.style.color = "lightblue";
+	else if (level === "LEVEL.WARN")
+		div.style.color = "orange";
 	div.innerText = msg;
 	code_output.appendChild(div);
 }
@@ -138,6 +149,8 @@ function createContextMenu(options, x, y) {
 		let opt = options[option];
 		let item = document.createElement("div");
 		item.className = "context_item";
+		if (opt.hasOwnProperty("class"))
+			item.className += "_" + opt.class;
 		item.innerText = opt.label;
 		item.onclick = opt.onclick;
 		menu.appendChild(item);
@@ -151,4 +164,95 @@ function destroyContextMenu() {
 		document.body.removeChild(open_context_menu);
 		open_context_menu = null;
 	}
+}
+
+function setShapesOpacity(value) {
+	for (let i in document.styleSheets[0].cssRules) {
+		let rule = document.styleSheets[0].cssRules[i];
+		if (rule.selectorText === ".shape")
+			rule.style.backgroundColor = "rgba(255, 255, 255, " + (value / 100) + ")";
+	}
+}
+
+function setGridOpacity(value) {
+	for (let i in document.styleSheets[0].cssRules) {
+		let rule = document.styleSheets[0].cssRules[i];
+		if (rule.selectorText === ".grid_border")
+			rule.style.borderColor = "rgba(255, 255, 255, " + (value / 100) + ")";
+	}
+}
+
+function saveInputField(field) {
+	if (typeof field.id !== "undefined" && field.id !== null && field.id !== "") {
+		let key = "textarea_" + field.id;
+		localStorage[key] = field.value;
+	}
+}
+
+function loadInputField(field) {
+	if (typeof field.id !== "undefined" && field.id !== null && field.id !== "") {
+		let key = "textarea_" + field.id;
+		if (typeof localStorage[key] !== "undefined" && localStorage[key] !== null && localStorage[key] !== "") {
+			field.value = localStorage[key];
+		}
+	}
+}
+
+function saveShapes() {
+	let shapes = [];
+	for (let i in shape_list) {
+		let shape = shape_list[i];
+		if (shape !== null)
+			shapes.push({ x: shape.getAttribute("data-x"), y: shape.getAttribute("data-y"), w: shape.getAttribute("data-width"), h: shape.getAttribute("data-height") });
+	}
+	localStorage["shapes"] = JSON.stringify(shapes);
+}
+
+function loadShapes() {
+	if (typeof localStorage["shapes"] !== "undefined" && localStorage["shapes"] !== null) {
+		let shapes = JSON.parse(localStorage["shapes"]);
+		for (let i in shapes) {
+			let shape = shapes[i];
+			let sh = createShape(shape.x, shape.y, shape.w, shape.h, false);
+			shape_container.appendChild(sh);
+			shape_list.push(sh);
+		}
+		updateShapeList();
+	}
+}
+
+function createShape(x, y, w, h, display = true) {
+	let shape = document.createElement("div");
+	shape.className = "shape";
+
+	if (!display)
+		shape.style.display = "none";
+	shape.style.width = w * pixelWidth + "px";
+	shape.style.height = h * pixelHeight + "px";
+	shape.style.top = (y - 1) * pixelHeight + "px";
+	shape.style.left = (x - 1) * pixelWidth + "px";
+	shape.setAttribute("data-x", x);
+	shape.setAttribute("data-y", y);
+	shape.setAttribute("data-width", w);
+	shape.setAttribute("data-height", h);
+	return shape;
+}
+
+function displayCoordinates(x, y) {
+	document.getElementById("x" + x).style.display = "block";
+	document.getElementById("y" + y).style.display = "block";
+}
+
+function hideCoordinates(x, y) {
+	document.getElementById("x" + x).style.display = "none";
+	document.getElementById("y" + y).style.display = "none";
+}
+
+function pixelSelectOnMouseOver(event) {
+	shapeSelectorMove(event);
+	displayCoordinates(event.target.getAttribute("data-x"), event.target.getAttribute("data-y"));
+}
+
+function pixelSelectOnMouseOut(event) {
+	hideCoordinates(event.target.getAttribute("data-x"), event.target.getAttribute("data-y"));
 }

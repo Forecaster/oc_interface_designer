@@ -9,6 +9,26 @@ body {
 	color            : white;
 }
 
+.col-3, .col-6, .col-9, .col-12 {
+	display : inline-block;
+}
+
+.col-12 {
+	width : 100%;
+}
+
+.col-9 {
+	width : 74%;
+}
+
+.col-6 {
+	width : 49%;
+}
+
+.col-3 {
+	width : 24%;
+}
+
 a,
 a:visited {
 	color : lightskyblue;
@@ -28,7 +48,7 @@ a:hover {
 	margin-bottom : 10px;
 }
 
-.monitor_container {
+.screen_container {
 	position : absolute;
 	top      : 9px;
 	left     : 9px;
@@ -38,19 +58,19 @@ a:hover {
 	height   : auto;
 }
 
-.monitor {
+.screen {
 	position       : relative;
 	/*top            : 9px;*/
 	/*left           : 9px;*/
 	/*width          : 1300px;*/
 	pointer-events : none;
+	cursor         : none;
 }
 
-.pixel_container {
+.pixel_container, .pixel_select_container {
 	position : absolute;
-}
-
-.pixel_select_container {
+	top      : 0;
+	left     : 0;
 }
 
 .row {
@@ -77,7 +97,6 @@ a:hover {
 
 .select_pixel:hover {
 	background-color : rgba(255, 255, 255, 0.5);
-	cursor           : none;
 }
 
 .pixel_content {
@@ -93,9 +112,10 @@ a:hover {
 }
 
 .shape {
-	position       : absolute;
-	z-index        : 1000;
-	pointer-events : none;
+	position         : absolute;
+	z-index          : 1000;
+	pointer-events   : none;
+	background-color : rgba(255, 255, 255, 1);
 }
 
 .color-row {
@@ -122,20 +142,20 @@ a:hover {
 	font-size   : 14pt;
 }
 
-.screen {
+.monitor {
 	position         : relative;
 	width            : 418px;
 	height           : 274px;
 	background-color : #0d0d0d;
 }
 
-.screen_part {
+.monitor_part {
 	position        : absolute;
 	background-size : 75px;
 	image-rendering : pixelated;
 }
 
-.screen_top {
+.monitor_top {
 	background-image : url('screen/ftm.png');
 	top              : 0;
 	left             : 0;
@@ -144,7 +164,7 @@ a:hover {
 	height           : 75px;
 }
 
-.screen_bottom {
+.monitor_bottom {
 	background-image : url('screen/fbm.png');
 	bottom           : 0;
 	left             : 0;
@@ -153,7 +173,7 @@ a:hover {
 	height           : 75px;
 }
 
-.screen_left {
+.monitor_left {
 	background-image : url('screen/fml.png');
 	left             : 0;
 	top              : 0;
@@ -162,7 +182,7 @@ a:hover {
 	width            : 75px;
 }
 
-.screen_right {
+.monitor_right {
 	background-image : url('screen/fmr.png');
 	right            : 0;
 	top              : 0;
@@ -171,7 +191,7 @@ a:hover {
 	width            : 75px;
 }
 
-.screen_top_left {
+.monitor_top_left {
 	background-image : url('screen/ftl.png');
 	top              : 0;
 	left             : 0;
@@ -180,7 +200,7 @@ a:hover {
 	height           : 75px;
 }
 
-.screen_top_right {
+.monitor_top_right {
 	background-image : url('screen/ftr.png');
 	top              : 0;
 	right            : 0;
@@ -189,7 +209,7 @@ a:hover {
 	height           : 75px;
 }
 
-.screen_bottom_left {
+.monitor_bottom_left {
 	background-image : url('screen/fbl.png');
 	bottom           : 0;
 	left             : 0;
@@ -198,7 +218,7 @@ a:hover {
 	height           : 75px;
 }
 
-.screen_bottom_right {
+.monitor_bottom_right {
 	background-image : url('screen/fbr.png');
 	bottom           : 0;
 	right            : 0;
@@ -216,31 +236,102 @@ a:hover {
 }
 
 .del_button {
-	color: red;
-	font-weight: bold;
-	margin-left: 4px;
+	color       : red;
+	font-weight : bold;
+	margin-left : 4px;
 }
 
 .context_menu {
-	position: fixed;
-	top: 0;
-	left: 0;
+	position         : fixed;
+	top              : 0;
+	left             : 0;
 
-	width: 160px;
+	width            : 270px;
 
-	background-color: black;
-	color: white;
+	background-color : black;
+	color            : white;
+}
+
+.context_item_title {
+	font-weight: bold;
+	margin-left: 2px;
 }
 
 .context_item {
-	cursor: pointer;
+	cursor : pointer;
+	margin-left: 4px;
 }
 
 .context_item:nth-child(2n) {
-	background-color: #0d0d0d;
+	background-color : #0d0d0d;
 }
 
 .context_item:hover {
-	background-color: white;
-	color: black;
+	background-color : white;
+	color            : black;
+}
+
+.console {
+	background-color : black;
+	border           : 1px solid white;
+	padding          : 5px;
+}
+
+.grid_rows, .grid_columns {
+	position       : absolute;
+	top            : 0;
+	left           : 0;
+
+	width          : 100%;
+	height         : 100%;
+	pointer-events : none;
+	overflow       : hidden;
+}
+
+.grid_border {
+	border-color : rgba(255, 255, 255, 0.2);
+}
+
+.grid_column {
+	position           : relative;
+	width              : 8px;
+	height             : 1000px;
+	border-right-width : 1px;
+	border-right-style : solid;
+	display            : inline-block;
+	margin-left        : -1px;
+}
+
+.grid_column:nth-child(1) {
+	margin-left : 0;
+}
+
+.grid_row {
+	position            : relative;
+	width               : 1000px;
+	height              : 16px;
+	border-bottom-width : 1px;
+	border-bottom-style : solid;
+	margin-top          : -1px;
+}
+
+.grid_row:nth-child(1) {
+	height     : 8px;
+	margin-top : 0;
+}
+
+.grid_coordinate_row {
+	position : absolute;
+	left     : -16px;
+}
+
+.grid_coordinate_column {
+	position : absolute;
+	top      : -16px;
+}
+
+.grid_coordinate_container_columns {
+	position : absolute;
+	top      : 0;
+	left     : 0;
 }

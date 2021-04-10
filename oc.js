@@ -7,9 +7,7 @@ oc = {
 		},
 		setBackground: function(color, isPaletteIndex) {
 			let default_bg = background.toString();
-			console.info(color);
-			background = convertColorValueToHex(color.toString());
-			console.info(background);
+			background = convertColorValueToHex(color);
 			return convertColorValueToDec(default_bg);
 		},
 		getForeground: function() {
@@ -26,18 +24,19 @@ oc = {
 		setDepth: function(bit) {},
 		maxResolution: function() {},
 		getResolution: function() {
-			return getResolution();
+			let data = getResolution();
+			return [ data.width, data.height ];
 		},
 		setResolution: function(width, height) {
-			setResolution(width, height);
+			setResolution(getFirstMonitor(), width, height);
 		},
 		getViewport: function() {},
 		setViewport: function() {},
 		get: function(x, y) {
-			let content = pixel_container.children[y -1].children[x -1].innerText;
+			let content = getFirstMonitor().pixel_container.children[y -1].children[x -1].innerText;
 			if (content === "")
 				return " ";
-			return [getContentAt(x, y), getForegroundAt(x, y), getBackgroundAt(x, y)];
+			return [getContentAt(getFirstMonitor(), x, y), getForegroundAt(getFirstMonitor(), x, y), getBackgroundAt(getFirstMonitor(), x, y)];
 		},
 		set: function(x, y, value, vertical) {
 			let start;
@@ -48,11 +47,12 @@ oc = {
 			let counter = 0;
 			for (let pos = start; counter < value.length; pos++) {
 				if (vertical)
-					setContentAt(x, pos, value[counter]);
+					setContentAt(getFirstMonitor(), x, pos, value[counter]);
 				else
-					setContentAt(pos, y, value[counter]);
+					setContentAt(getFirstMonitor(), pos, y, value[counter]);
 				counter++;
 			}
+			return true;
 		},
 		copy: function(x, y, width, height, tx, ty) {
 			let content = {};
@@ -60,7 +60,7 @@ oc = {
 				for (let posy = y; posy < y + height; posy++) {
 					if (typeof content[posy] == "undefined")
 						content[posy] = {};
-					content[posy][posx] = { content: getContentAt(x, y), background: getBackgroundAt(x, y), foreground: getForegroundAt(x, y) };
+					content[posy][posx] = { content: getContentAt(getFirstMonitor(), x, y), background: getBackgroundAt(getFirstMonitor(), x, y), foreground: getForegroundAt(getFirstMonitor(), x, y) };
 				}
 			}
 			let cx = tx;
@@ -69,68 +69,60 @@ oc = {
 				let line = content[posy];
 				for (let posx in line) {
 					let pixel = line[posx];
-					setContentAt(cx, cy, pixel.content);
-					setBackgroundAt(cx, cy, pixel.background);
-					setForegroundAt(cx, cy, pixel.foreground);
+					setContentAt(getFirstMonitor(), cx, cy, pixel.content);
+					setBackgroundAt(getFirstMonitor(), cx, cy, pixel.background);
+					setForegroundAt(getFirstMonitor(), cx, cy, pixel.foreground);
 					cx++;
 				}
 				cx = tx;
 				cy++;
 			}
+			return true;
 		},
 		fill: function(x, y, width, height, char) {
 			for (let posx = x; posx < x + width; posx++) {
 				for (let posy = y; posy < y + height; posy++) {
-					setContentAt(posx, posy, char);
+					setContentAt(getFirstMonitor(), posx, posy, char);
 				}
 			}
+			return true;
 		}
 	},
 	fgui: {
 		buttons: {},
-		createButton: function(id, text, background_color, x1, y1, x2, y2) {
-			let bg_default = oc.gpu.setBackground(background_color);
-			let width = x2 - x1 + 1;
-			let height = y2 - y1 + 1;
-			oc.gpu.fill(x1, y1, width, height, " ");
-			this.writeTextCentered(text, y1 + Math.floor(height / 2), "0xFFFFFF");
-			oc.gpu.setBackground(bg_default);
-			this.buttons[id] = { x1: x1, y1: y1, x2: x2, y2: y2 };
+		createButton: function(id, text, x, y, w, h) {
+			oc.gpu.fill(x, y, w, h, " ");
+			this.writeTextCentered(text, y + Math.floor(height / 2), "0xFFFFFF");
+			this.buttons[id] = { x: x, y: y, w: w, h: h };
 		},
 		clearButton: function(id) {
 			if (this.buttons[id]) {
 				let button = this.buttons[id];
-				let width = button.x2 - button.x1 + 1;
-				let height = button.y2 - button.y1 + 1;
-				oc.gpu.fill(button.x1, button.y1, width, height, " ");
+				oc.gpu.fill(button.x, button.y, button.w, button.h, " ");
 			}
 		},
 		testButton: function(x, y) {
 			for (let id in this.buttons) {
 				let button = this.buttons[id];
-				if (x >= button.x1 && x <= button.x2 && y >= button.y1 && y <= button.y2) {
+				if (x >= button.x && x <= button.x + button.w && y >= button.y && y <= button.y + button.h) {
 					return id
 				}
 			}
 			return null;
 		},
-		writeTextCentered: function(text, line, color, background_color) {
-			let resolution = oc.gpu.getResolution();
-			let width = resolution.width;
-			let height = resolution.height;
+		writeTextCentered: function(text, x, y, w, h, preserve_background_color) {
 			let fg_default = oc.gpu.getForeground();
 			let bg_default = oc.gpu.getBackground();
+			let line = y + Math.floor(h / 2);
 
-			if (color)
-				oc.gpu.setForeground(color);
-			if (background_color && background_color !== "preserve")
-				oc.gpu.setBackground(background_color);
-			let starting_position = (width / 2) - Math.floor(text.length / 2) + 1;
-			let posY = Math.min(height, line);
-			if (background_color) {
+			if (preserve_background_color === null)
+				preserve_background_color = false;
+			let starting_position = x + (w / 2) - Math.floor(text.length / 2) -1;
+			let posY = line;
+			if (preserve_background_color) {
 				let char_counter = 0;
 				for (let posX = starting_position; posX < (starting_position + text.length); posX++) {
-					let background = getBackgroundAt(posX, posY);
+					let background = getBackgroundAt(getFirstMonitor(), posX, posY);
 					oc.gpu.setBackground(background);
 					oc.gpu.set(posX, posY, text.substring(char_counter, char_counter));
 					char_counter++;

@@ -3,49 +3,28 @@ let shape_list = [];
 let touch_mode = false;
 let touch_methods = null;
 function shapeSelectorStartStop(event) {
-	let target = event.target;
+	const target = event.target;
+	const x = target.getAttribute("data-x");
+	const y = target.getAttribute("data-y");
 	event.preventDefault();
 	if (touch_mode) {
-		if (touch_methods !== null) {
-			for (let i in touch_methods) {
-				let method = touch_methods[i];
-				if (method.call === "undef_global") {
-					codeOutput(LEVEL.ERROR, "Call " + i + ": Attempt to index a nil value (global '" + method.name + "')");
-				} else if (method.call === "undef_field") {
-					codeOutput(LEVEL.ERROR, "Call " + i + ": Attempt to index a nil value (field '" + method.name + "')");
-				} else {
-					let args = JSON.parse(JSON.stringify(method.args));
-					for (let i in args) {
-						if (args[i] === "x")
-							args[i] = target.getAttribute("data-x");
-						else if (args[i] === "y")
-							args[i] = target.getAttribute("data-y");
-					}
-					let ret = method.call(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
-					if (typeof ret === "undefined" || ret === null)
-						ret = "nil";
-					codeOutput(LEVEL.MSG, "Call " + i + ": " + ret);
-				}
+		try {
+			let code = "local x = " + x + "\nlocal y = " + y + "\n" + code_area_touch.value;
+			let ret = fengari.load(code)();
+			console.debug(ret);
+			if (ret)
+				codeOutput(LEVEL.MSG, ret);
+		} catch (ex) {
+			if (typeof ex === "string") {
+				codeOutput(LEVEL.ERROR, ex);
+				return;
 			}
+			codeOutput(LEVEL.ERROR, "An internal error occurred: " + ex.name);
+			console.error(ex);
+			return;
 		}
 	} else if (current_shape == null) {
-		current_shape = document.createElement("div");
-		current_shape.className = "shape";
-
-		let x = target.getAttribute("data-x");
-		let y = target.getAttribute("data-y");
-		let w = 1;
-		let h = 1;
-
-		current_shape.style.backgroundColor = "white";
-		current_shape.style.width = w * pixelWidth + "px";
-		current_shape.style.height = h * pixelHeight + "px";
-		current_shape.style.top = (y -1) * pixelHeight + "px";
-		current_shape.style.left = (x -1) * pixelWidth + "px";
-		current_shape.setAttribute("data-x", x);
-		current_shape.setAttribute("data-y", y);
-		current_shape.setAttribute("data-width", w);
-		current_shape.setAttribute("data-height", h);
+		current_shape = createShape(x, y, 1, 1);
 		selector_shape_container.appendChild(current_shape);
 	} else {
 		console.info(current_shape);
@@ -53,7 +32,8 @@ function shapeSelectorStartStop(event) {
 		current_shape.style.display = "none";
 		shape_list.push(current_shape);
 		current_shape = null;
-		update_shape_list();
+		updateShapeList();
+		saveShapes();
 	}
 }
 
@@ -86,11 +66,26 @@ function generateMethodCall(method, args) {
 		ret = "gpu.setBackground(" + args.color + ")";
 	else if (method === "gpu.setForeground")
 		ret = "gpu.setForeground(" + args.color + ")";
+	else if (method === "fgui.writeTextCentered")
+		ret = "fgui.writeTextCentered(\"My Text\", " + args.x + ", " + args.y + ", " + args.w + ", " + args.h + ")";
+	else if (method === "fgui.createButton")
+		ret = "fgui.createButton(\"mybutton\", \"My Button\", " + args.x + ", " + args.y + ", " + args.w + ", " + args.h + ")";
 	return ret;
 }
 
-function generateAndInsertMethodCall(method, args) {
-	code_area.value += generateMethodCall(method, args) + "\n";
+function generateAndInsertMethodCall(pre_content, method, args) {
+	const meth = generateMethodCall(method, args);
+	if (meth) {
+		if (pre_content !== "" && pre_content.substr(pre_content.length - 1) !== "\n")
+			pre_content += "\n";
+		pre_content += meth + "\n";
+	}
+	return pre_content;
+}
+
+function generateAndInsertCode(pre_content, code, args) {
+	pre_content += code;
+	return pre_content;
 }
 
 function parseCode(code) {
@@ -100,7 +95,9 @@ function parseCode(code) {
 	let counter = 0;
 	while ((matches = re.exec(code)) !== null) {
 		counter++;
-		let libs = matches[1].split(".");
+		let libs = [];
+		if (typeof matches[1] !== "undefined")
+			libs = matches[1].split(".");
 		let func = matches[2];
 		let args = matches[3].split(",")
 		for (let i in args) {
