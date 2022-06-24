@@ -165,9 +165,9 @@ $ascii_characters = array(
 				<div id="shape_container" class="shape_container"></div>
 				<div id="selector_shape_container" class="shape_container"></div>
 				<div id="pixel_select_container" class="pixel_select_container"></div>
+				<canvas id="grid_container" class="grid"></canvas>
 			</div>
 		</div>
-		<canvas id="grid_container" class="grid"></canvas>
 	</div>
 	<div>Mode: <span id="current_mode" style="color: red;">EDIT</span></div>
 	<div class="container">
@@ -200,8 +200,8 @@ $ascii_characters = array(
 <div class="main-container" style="width: 600px;">
 	<p>Available components/libraries:</p>
 	<ul>
-		<li><a href="https://ocdoc.cil.li/component:gpu?s[]=gpu">GPU</a> - Call as if having assigned the gpu component to the variable `gpu`. For example: <code>gpu.fill(x, y, w, h, char)</code></li>
-		<li><a href="fgui">FGUI</a> - Call as if having assigned the library to the variable `fgui`. For example: <code>fgui.writeTextCentered(text, line, color, background_color)</code></li>
+		<li><a href="https://ocdoc.cil.li/component:gpu?s[]=gpu">GPU</a> (OpenComputers GPU component) - Call as if having assigned the gpu component to the variable `gpu`. For example: <code>gpu.fill(x, y, w, h, char)</code></li>
+		<li><a href="fgui">FGUI</a> (Forecaster's Simple GUI library) - Call as if having assigned the library to the variable `fgui`. For example: <code>fgui.writeTextCentered(text, line, color, background_color)</code></li>
 	</ul>
   <div class="container">Controls:</div>
 	<div class="container">

@@ -16,5 +16,6 @@
 			<li><code>exampleOnTouch(name: string, screen: address, x: number, y: number, button: number, player: string)</code><br/>An example of a callback function for the touch event.</li>
 			<li><code>writeTextCentered(text: string, line: number, color: number, background_color: number)</code><br/>Writes the given text centered on the given line relative to the current resolution.</li>
 		</ul>
+		<p>You can view the actual lua code by clicking <a href="fgui.lua">here</a>. Right-click on the link to save the file, or open and copy-paste the code into Minecraft.</p>
 	</body>
 </html>

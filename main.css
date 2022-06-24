@@ -315,10 +315,10 @@ a:hover {
 	margin-top          : -1px;
 }
 
-.grid_row:nth-child(1) {
+/*.grid_row:nth-child(1) {
 	height     : 8px;
 	margin-top : 0;
-}
+}*/
 
 .grid_coordinate_row {
 	position : absolute;

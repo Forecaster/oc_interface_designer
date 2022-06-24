@@ -239,13 +239,17 @@ function createShape(x, y, w, h, display = true) {
 }
 
 function displayCoordinates(x, y) {
-	document.getElementById("x" + x).style.display = "block";
-	document.getElementById("y" + y).style.display = "block";
+	try {
+		document.getElementById("x" + x).style.display = "block";
+		document.getElementById("y" + y).style.display = "block";
+	} catch (e) {}
 }
 
 function hideCoordinates(x, y) {
-	document.getElementById("x" + x).style.display = "none";
-	document.getElementById("y" + y).style.display = "none";
+	try {
+		document.getElementById("x" + x).style.display = "none";
+		document.getElementById("y" + y).style.display = "none";
+	} catch (e) {}
 }
 
 function pixelSelectOnMouseOver(event) {

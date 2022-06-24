@@ -36,11 +36,11 @@ function createMonitor(element, w, h) {
 		let grid_container_columns = document.createElement("div");
 		grid_container_columns.id = "grid_container_columns";
 		grid_container_columns.className = "grid_columns";
-		element.appendChild(grid_container_columns);
+		screen_container.appendChild(grid_container_columns);
 		let grid_container_rows = document.createElement("div");
 		grid_container_rows.id = "grid_container_rows";
 		grid_container_rows.className = "grid_rows";
-		element.appendChild(grid_container_rows);
+		screen_container.appendChild(grid_container_rows);
 		let grid_coordinate_container_columns = document.createElement("div");
 		grid_coordinate_container_columns.id = "grid_coordinate_container_columns";
 		grid_coordinate_container_columns.className = "grid_coordinate_container_columns";
