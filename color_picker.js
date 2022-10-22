@@ -29,6 +29,13 @@ function generate_color_picker() {
 function pick_color(element) {
 	document.getElementById("color_value").value = "#" + element.title;
 	document.getElementById("color_value_computronics").value = "0x" + element.title;
+	let r = Math.floor(parseInt(element.title.substring(0,2), 16) / 8);
+	let g = Math.floor(parseInt(element.title.substring(2,4), 16) / 8);
+	let b = Math.floor(parseInt(element.title.substring(4,6), 16) / 8);
+	console.debug(r, g, b);
+	let bit15_value = (r << 10) + (g << 5) + b;
+	console.debug(bit15_value);
+	document.getElementById("color_value_colorful_lamp").value = bit15_value;
 	update_current_colors("#" + element.title);
 }
 

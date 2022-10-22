@@ -233,6 +233,7 @@ $ascii_characters = array(
     <table>
       <TR><TD><label for="color_value">Web Hex:</label></TD><TD><input type="text" placeholder="Web Hex Value" id="color_value"/></TD></TR>
       <TR><TD><label for="color_value_computronics">Lua Hex:</label></TD><TD><input type="text" placeholder="Lua Hex Value" id="color_value_computronics"/></TD></TR>
+			<TR title="Colorful lamp value"><TD><label for="color_value_colorful_lamp">15-bit decimal:</label></TD><TD><input type="text" placeholder="Colorful Lamp Value" id="color_value_colorful_lamp"/></TD></TR>
     </table>
   </div>
 	<div class="container">
